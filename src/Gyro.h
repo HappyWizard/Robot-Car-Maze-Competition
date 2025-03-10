@@ -55,7 +55,7 @@ void mpuSetup(){
   Wire.beginTransmission(MPU);       // Start communication with MPU6050 // MPU=0x68
   Wire.write(0x6B);                  // Talk to the register 6B
   Wire.write(0x00);                  // Make reset - place a 0 into the 6B register
-  Wire.endTransmission(true);        //end the transmission
+  Wire.endTransmission(true);        // end the transmission
   
   // Call this function if you need to get the IMU error values for your module
   calculateError();
