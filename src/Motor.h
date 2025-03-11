@@ -8,8 +8,8 @@
 // Direction control pins
 #define motorL2 A3
 #define motorL1 A2
-#define motorR2 A1
-#define motorR1 A0
+#define motorR1 A1
+#define motorR2 A0
 
 const int error = 4;
 
@@ -85,13 +85,13 @@ void motorSetup(){
 }
 
 void slightRight(){
-    goRightMotor(130);
+    goRightMotor(130);  // previously is 120, but keep refusing to move or stuck, so increase to 130
     delay(5);
     restMotor();
 }
 
 void slightLeft(){
-    goLeftMotor(130); // previously is 120
+    goLeftMotor(130); // previously is 120, but keep refusing to move or stuck, so increase to 130
     delay(5);
     restMotor();
 }
