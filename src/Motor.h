@@ -85,13 +85,13 @@ void motorSetup(){
 }
 
 void slightRight(){
-    goRightMotor(130);  // previously is 120, but keep refusing to move or stuck, so increase to 130
-    delay(5);
-    restMotor();
+    goRightMotor(120);  // previously is 120, but keep refusing to move or stuck, so increase to 130
+    // delay(5);
+    // restMotor();
 }
 
 void slightLeft(){
-    goLeftMotor(130); // previously is 120, but keep refusing to move or stuck, so increase to 130
-    delay(5);
-    restMotor();
+    goLeftMotor(120); // previously is 120, but keep refusing to move or stuck, so increase to 130
+    // delay(5);
+    // restMotor();
 }

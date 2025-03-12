@@ -6,17 +6,22 @@
 #include <Gyro.h>
 
 // Define maze size
-#define ROWS 4
-#define COLS 4
+#define ROWS 9
+#define COLS 9
 
-char mappedMaze[ROWS][COLS];  // Global array to store mapped maze
+// char mappedMaze[ROWS][COLS];  // Global array to store mapped maze
 
-// char maze[][4] = {
-//   {'.', '.', '.', 'E'},
-//   {'.', '#', '#', '*'},
-//   {'*', '*', '*', '*'},
-//   {'S', '#', '*', '*'}
-// };
+char mappedMaze[][9] = {
+  {'#', '#', '#', '#','#','#','#','E','#'},
+  {'#', '.', '#', '.','.','.','.','.','#'},
+  {'#', '.', '#', '.','#','.','#','.','#'},
+  {'#', '.', '#', '.','#','.','#','.','#'},
+  {'#', '.', '#', '#','#','#','#','.','#'},
+  {'#', '.', '.', '.','.','.','#','.','#'},
+  {'#', '.', '#', '#','#','.','#','.','#'},
+  {'#', '.', '#', '.','.','.','.','.','#'},
+  {'#', 'S', '#', '#','#','#','#','#','#'}
+};
 
 // Current (x, y) position of car, top left is (0, 0)
 int currentX = 0;
@@ -84,7 +89,13 @@ void goStraightGyro(float targetDistance, float desiredAngle){
   float initialDistance = getMovingDistance();
   while ((getMovingDistance()-initialDistance)<targetDistance) {
     Serial.println(update());
-    if (update()<desiredAngle) {
+    if (desiredAngle==0) {
+      if (update()<180) {
+        slightRight();
+      } else {
+        slightLeft();
+      }
+    } else if (update()<desiredAngle) {
       slightLeft();
       // Serial.println("Slight Left");
     } else if (update()>desiredAngle) {
@@ -97,6 +108,7 @@ void goStraightGyro(float targetDistance, float desiredAngle){
   }
   restMotor();
 }
+
 // cannot put delay after calling this function, or else gyro will not update and shit happens
 void turnRightUntilCorrect(){
   float targetAngle = update() - 90;
@@ -135,7 +147,7 @@ void goForward(float currentAngle){
   Serial.println("going Forward");
   // cout << " => Went Forward" << endl;
   // moves forward for 25 cm
-  goStraightGyro(25, currentAngle);
+  goStraightGyro(12.5, currentAngle);
 }
 
 void turnRight(){
@@ -517,8 +529,8 @@ bool solveMaze(char maze[ROWS][COLS], Cell start, Cell end) {
 
 // Function to get the shortest path modified maze
 void getShortestPath(char maze[ROWS][COLS]) {
-    Cell start = {3, 0}; // Example start position
-    Cell end = {0, 3};   // Example end position
+    Cell start = {8, 1}; // Example start position
+    Cell end = {0, 7};   // Example end position
 
     if (!solveMaze(maze, start, end)) {
         Serial.println("No path found.");
@@ -556,6 +568,11 @@ void readMazeFromEEPROM(char maze[ROWS][COLS]) {
   }
 }
 
+// Simulated wall detection function (replace with actual sensor logic)
+bool detectWall(int row, int col) {
+  // Implement actual wall detection using ultrasonic sensors
+  return false;  // Placeholder (assume no walls for now)
+}
 // Function to explore the maze and map it
 void getMapping() {
   // Robot movement logic to explore the maze
@@ -573,11 +590,6 @@ void getMapping() {
   mappedMaze[ROWS - 1][COLS - 1] = 'E';  // End position
 }
 
-// Simulated wall detection function (replace with actual sensor logic)
-bool detectWall(int row, int col) {
-  // Implement actual wall detection using ultrasonic sensors
-  return false;  // Placeholder (assume no walls for now)
-}
 
 void setup() {
   Serial.begin(115200);
@@ -585,32 +597,37 @@ void setup() {
   ultrasonicSetup();
   encoderSetup();
   mpuSetup();
-  memoryReset();
-
+  
   // Step 1: Map the maze using the robot
-  getMapping();
-
+  // getMapping();
+  
   // check the mapping
-  Serial.println("Original Maze:");
-  printMaze(mappedMaze);
-
-  // Step 2: find the shortest path using BFS
-  getShortestPath(mappedMaze);
-
-  // check the resulting shortest path mapping
-  Serial.println("Maze with Shortest Path:");
-  printMaze(mappedMaze);
-
-  // Step 3: Store the maze in EEPROM
-  storeMazeInEEPROM(mappedMaze);
+  // Serial.println("Original Maze:");
+  // printMaze(mappedMaze);
+  
+  // // Step 2: find the shortest path using BFS
+  // getShortestPath(mappedMaze);
+  
+  // // check the resulting shortest path mapping
+  // Serial.println("Maze with Shortest Path:");
+  // printMaze(mappedMaze);
+  
+  // // // Step 3: Store the maze in EEPROM
+  // memoryReset();
+  // storeMazeInEEPROM(mappedMaze);
 
   // Uncomment this section after finish doing mapping, or u want to run all together also can
   // Step 4: Read the maze from EEPROM into a local array
   char retrievedMaze[ROWS][COLS];
-  readMazeFromEEPROM(retrievedMaze);
+  readMazeFromEEPROM(retrievedMaze); 
+
+  // check the resulting shortest path mapping
+  Serial.println("Read Maze in EEPROM:");
+  printMaze(retrievedMaze);
 
   // Step 5: Execute pathfinding using the retrieved maze
   executePath(retrievedMaze, ROWS, COLS);
+
 }
 
 int ori = 180;
@@ -619,20 +636,20 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   // Jimm's Left Wall Following Code
-  float fx = getDistanceFront();
-  // float rx = getDistanceRight();
-  float lx = getDistanceLeft();
+  // float fx = getDistanceFront();
+  // // float rx = getDistanceRight();
+  // float lx = getDistanceLeft();
 
-  if (fx<5) {
-    turnRight(); ori-=90;
-  } else if (lx>25) {
-    turnLeft(); ori+=90;
-  } else {
-    goForward(ori);
-  }
+  // if (fx<5) {
+  //   turnRight(); ori-=90;
+  // } else if (lx>25) {
+  //   turnLeft(); ori+=90; 
+  // } else {
+  //   goForward(ori);
+  // }
 
-  if (ori>360) {ori-=360;}
-  if (ori<0) {ori +=360;}
+  // if (ori>360) {ori-=360;}
+  // if (ori<0) {ori +=360;}
 
 
   // Testing Individual Functions
