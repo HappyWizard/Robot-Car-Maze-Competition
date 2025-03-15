@@ -6,26 +6,33 @@
 #include <Gyro.h>
 
 // Define maze size
-#define ROWS 9
-#define COLS 9
+#define ROWS 17
+#define COLS 17
 
-// char mappedMaze[ROWS][COLS];  // Global array to store mapped maze
+char mappedMaze[][17] = {
+  {'#', 'E', '#', '#','#','#','#','#','#','#','#','#','#','#','#','#','#'},
+  {'#', '.', '#', '.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
+  {'#', '.', '#', '.','#','#','#','#','#','.','#','#','#','#','#','#','#'},
+  {'#', '.', '#', '.','.','.','#','.','.','.','.','.','#','.','.','.','#'},
+  {'#', '.', '#', '#','#','#','#','.','#','#','#','#','#','.','#','#','#'},
+  {'#', '.', '.', '.','.','.','#','.','.','.','#','.','.','.','#','.','#'},
+  {'#', '.', '#', '#','#','.','#','.','#','.','#','.','#','#','#','.','#'},
+  {'#', '.', '#', '.','.','.','.','.','#','.','#','.','.','.','.','.','#'},
+  {'#', '.', '#', '.','#','#','#','.','#','#','#','.','#','.','#','#','#'},
+  {'#', '.', '#', '.','.','.','#','.','.','.','#','.','#','.','.','.','#'},
+  {'#', '.', '#', '#','#','#','#','.','#','#','#','.','#','#','#','#','#'},
+  {'#', '.', '#', '.','#','.','.','.','.','.','#','.','.','.','.','.','#'},
+  {'#', '.', '#', '.','#','#','#','#','#','.','#','#','#','.','#','.','#'},
+  {'#', '.', '#', '.','#','.','.','.','.','.','.','.','.','.','#','.','#'},
+  {'#', '#', '#', '.','#','.','#','#','#','#','#','.','#','.','#','.','#'},
+  {'#', '.', '.', '.','.','.','#','.','.','.','.','.','#','.','#','.','#'},
+  {'#', '#', '#', '#','#','#','#','#','#','#','#','#','#','#','#','S','#'}
 
-char mappedMaze[][9] = {
-  {'#', '#', '#', '#','#','#','#','E','#'},
-  {'#', '.', '#', '.','.','.','.','.','#'},
-  {'#', '.', '#', '.','#','.','#','.','#'},
-  {'#', '.', '#', '.','#','.','#','.','#'},
-  {'#', '.', '#', '#','#','#','#','.','#'},
-  {'#', '.', '.', '.','.','.','#','.','#'},
-  {'#', '.', '#', '#','#','.','#','.','#'},
-  {'#', '.', '#', '.','.','.','.','.','#'},
-  {'#', 'S', '#', '#','#','#','#','#','#'}
 };
 
 // Current (x, y) position of car, top left is (0, 0)
-int currentX = 0;
-int currentY = 0;
+int currentX = 16;
+int currentY = 1;
 
 int previousX = 0;
 int previousY = 0;
@@ -39,22 +46,22 @@ int currentOrientation = 0;
 // 2: south
 // 3: west
 
-String pathTravelled[100] = {""};
-int pathIndex = 0;
+// String pathTravelled[2] = {""};
+// int pathIndex = 0;
 
-void printPaths() {
-    // cout << endl;
-    // cout << "Path Summary: " << endl;
-    Serial.println();
-    Serial.println("Path Summary:");
-    for (int i = 0; i < pathIndex; i++) {
-        // cout << "Step " << i + 1 << ": " << pathTravelled[i] << endl;
-        Serial.print("Step ");
-        Serial.print(i + 1);
-        Serial.print(": ");
-        Serial.println(pathTravelled[i]);
-    }
-}
+// void printPaths() {
+//     // cout << endl;
+//     // cout << "Path Summary: " << endl;
+//     Serial.println();
+//     Serial.println("Path Summary:");
+//     for (int i = 0; i < pathIndex; i++) {
+//         // cout << "Step " << i + 1 << ": " << pathTravelled[i] << endl;
+//         Serial.print("Step ");
+//         Serial.print(i + 1);
+//         Serial.print(": ");
+//         Serial.println(pathTravelled[i]);
+//     }
+// }
 
 int gyroReading = 180;
 //  180: facing front
@@ -88,7 +95,7 @@ void goStraightGyro(float targetDistance, float desiredAngle){
   targetDistance = 3.7 * targetDistance;
   float initialDistance = getMovingDistance();
   while ((getMovingDistance()-initialDistance)<targetDistance) {
-    Serial.println(update());
+    // Serial.println(update());
     if (desiredAngle==0) {
       if (update()<180) {
         slightRight();
@@ -137,21 +144,21 @@ void setGyroReading(int angle){
 }
 
 // Record the movement of robot car throughout the entire journey (e.g forward, left, right)
-void setPathTravelled(String path){
-  pathTravelled[pathIndex] = path;
-  pathIndex++;
-}
+// void setPathTravelled(String path){
+//   pathTravelled[pathIndex] = path;
+//   pathIndex++;
+// }
 
 void goForward(float currentAngle){
-  setPathTravelled("Forward");
+  // setPathTravelled("Forward");
   Serial.println("going Forward");
   // cout << " => Went Forward" << endl;
   // moves forward for 25 cm
-  goStraightGyro(12.5, currentAngle);
+  goStraightGyro(10, currentAngle);
 }
 
 void turnRight(){
-  setPathTravelled("Right");
+  // setPathTravelled("Right");
   Serial.println("turning Right");
   // cout << " => turned Right" << endl;
   turnRightUntilCorrect();
@@ -160,7 +167,7 @@ void turnRight(){
 }
 
 void turnLeft(){
-  setPathTravelled("Left");
+  // setPathTravelled("Left");
   Serial.println("turning Left");
   // cout << " => turned Left" << endl;
   turnLeftUntilCorrect();
@@ -440,101 +447,105 @@ void executePath(char maze[][COLS], int rows, int cols) {
 // BFS algorithm to find shortest path
 // Structure to represent a cell in the maze
 struct Cell {
-    int row;
-    int col;
+  int row;
+  int col;
 };
 
 // Fixed-size queue for BFS (instead of dynamic memory allocation)
 struct Queue {
-    Cell queue[ROWS * COLS]; // Maximum size of queue
-    int front;
-    int rear;
+  Cell queue[ROWS * COLS]; // Maximum size of queue
+  int front;
+  int rear;
 
-    Queue() {
-        front = 0;
-        rear = 0;
-    }
+  Queue() {
+      front = 0;
+      rear = 0;
+  }
 
-    bool isEmpty() {
-        return front == rear;
-    }
+  bool isEmpty() {
+      return front == rear;
+  }
 
-    void enqueue(Cell c) {
-        if (rear < ROWS * COLS) {
-            queue[rear++] = c;
-        }
-    }
+  void enqueue(Cell c) {
+      if (rear < ROWS * COLS) {
+          queue[rear++] = c;
+      }
+  }
 
-    Cell dequeue() {
-        if (!isEmpty()) {
-            return queue[front++];
-        }
-        return {-1, -1}; // Invalid cell
-    }
+  Cell dequeue() {
+      if (!isEmpty()) {
+          return queue[front++];
+      }
+      return {-1, -1}; // Invalid cell
+  }
 };
 
 // Function to check if a cell is valid (within bounds and not a wall)
-bool isValid(char maze[ROWS][COLS], int r, int c, bool visited[ROWS][COLS]) {
-    return (r >= 0 && r < ROWS && c >= 0 && c < COLS && maze[r][c] != '#' && !visited[r][c]);
+bool isValid(char maze[ROWS][COLS], int r, int c, uint8_t visited[ROWS][(COLS + 7) / 8]) {
+  return (r >= 0 && r < ROWS && c >= 0 && c < COLS && maze[r][c] != '#' && !(visited[r][c / 8] & (1 << (c % 8))));
 }
 
 // Function to reconstruct the path
-void reconstructPath(Cell came_from[ROWS][COLS], Cell start, Cell end, char maze[ROWS][COLS]) {
-    Cell current = end;
+void reconstructPath(uint8_t came_from[ROWS][COLS], Cell start, Cell end, char maze[ROWS][COLS]) {
+  Cell current = end;
 
-    while (current.row != start.row || current.col != start.col) {
-        if (maze[current.row][current.col] != 'S' && maze[current.row][current.col] != 'E') {
-            maze[current.row][current.col] = '*'; // Mark shortest path
-        }
-        current = came_from[current.row][current.col];
-    }
+  while (current.row != start.row || current.col != start.col) {
+      if (maze[current.row][current.col] != 'S' && maze[current.row][current.col] != 'E') {
+          maze[current.row][current.col] = '*'; // Mark shortest path
+      }
+      uint8_t dir = came_from[current.row][current.col];
+      if (dir == 0) current.row++;
+      else if (dir == 1) current.row--;
+      else if (dir == 2) current.col++;
+      else if (dir == 3) current.col--;
+  }
 }
 
 // BFS function to find the shortest path
 bool solveMaze(char maze[ROWS][COLS], Cell start, Cell end) {
-    Queue q;
-    bool visited[ROWS][COLS] = {false};
-    Cell came_from[ROWS][COLS];
+  Queue q;
+  uint8_t visited[ROWS][(COLS + 7) / 8] = {0};
+  uint8_t came_from[ROWS][COLS] = {0};
 
-    q.enqueue(start);
-    visited[start.row][start.col] = true;
-    came_from[start.row][start.col] = {-1, -1}; // Mark as start
+  q.enqueue(start);
+  visited[start.row][start.col / 8] |= (1 << (start.col % 8));
+  came_from[start.row][start.col] = 255; // Mark as start
 
-    int dr[] = {-1, 1, 0, 0}; // Row offsets
-    int dc[] = {0, 0, -1, 1}; // Column offsets
+  int dr[] = {-1, 1, 0, 0}; // Row offsets
+  int dc[] = {0, 0, -1, 1}; // Column offsets
 
-    while (!q.isEmpty()) {
-        Cell current = q.dequeue();
+  while (!q.isEmpty()) {
+      Cell current = q.dequeue();
 
-        if (current.row == end.row && current.col == end.col) {
-            reconstructPath(came_from, start, end, maze);
-            return true; // Path found
-        }
+      if (current.row == end.row && current.col == end.col) {
+          reconstructPath(came_from, start, end, maze);
+          return true; // Path found
+      }
 
-        for (int i = 0; i < 4; i++) {
-            int nr = current.row + dr[i];
-            int nc = current.col + dc[i];
+      for (int i = 0; i < 4; i++) {
+          int nr = current.row + dr[i];
+          int nc = current.col + dc[i];
 
-            if (isValid(maze, nr, nc, visited)) {
-                Cell next = {nr, nc};
-                q.enqueue(next);
-                visited[nr][nc] = true;
-                came_from[nr][nc] = current;
-            }
-        }
-    }
+          if (isValid(maze, nr, nc, visited)) {
+              Cell next = {nr, nc};
+              q.enqueue(next);
+              visited[nr][nc / 8] |= (1 << (nc % 8));
+              came_from[nr][nc] = i; // Store direction
+          }
+      }
+  }
 
-    return false; // No path found
+  return false; // No path found
 }
 
 // Function to get the shortest path modified maze
 void getShortestPath(char maze[ROWS][COLS]) {
-    Cell start = {8, 1}; // Example start position
-    Cell end = {0, 7};   // Example end position
+  Cell start = {16, 1}; // Example start position
+  Cell end = {0, 15};   // Example end position
 
-    if (!solveMaze(maze, start, end)) {
-        Serial.println("No path found.");
-    }
+  if (!solveMaze(maze, start, end)) {
+      Serial.println("No path found.");
+  }
 }
 
 // Example function to print the maze (for debugging)
@@ -567,29 +578,24 @@ void readMazeFromEEPROM(char maze[ROWS][COLS]) {
     }
   }
 }
+// void readMazeFromFile(const char filename[]) {
+//   ifstream file(filename);
+//   if (!file) {
+//       cout << "Error opening file!" << endl;
+//       return;
+//   }
 
-// Simulated wall detection function (replace with actual sensor logic)
-bool detectWall(int row, int col) {
-  // Implement actual wall detection using ultrasonic sensors
-  return false;  // Placeholder (assume no walls for now)
-}
+//   for (int i = 0; i < ROWS; i++) {
+//       file.getline(maze[i], COLS); // Read each row into the array
+//   }
+
+//   file.close();
+//   cout << "Maze successfully loaded from file!" << endl;
+// }
 // Function to explore the maze and map it
 void getMapping() {
-  // Robot movement logic to explore the maze
-  for (int i = 0; i < ROWS; i++) {
-    for (int j = 0; j < COLS; j++) {
-      if (detectWall(i, j)) {
-        mappedMaze[i][j] = '#';  // Wall detected
-      } else {
-        mappedMaze[i][j] = '.';  // Open path
-      }
-    }
-  }
-
-  mappedMaze[0][0] = 'S';  // Start position
-  mappedMaze[ROWS - 1][COLS - 1] = 'E';  // End position
+  // implement getMapping function here if memory is not an issue
 }
-
 
 void setup() {
   Serial.begin(115200);
@@ -599,25 +605,26 @@ void setup() {
   mpuSetup();
   
   // Step 1: Map the maze using the robot
-  // getMapping();
+  getMapping();
   
   // check the mapping
-  // Serial.println("Original Maze:");
-  // printMaze(mappedMaze);
+  Serial.println("Original Maze:");
+  printMaze(mappedMaze);
   
-  // // Step 2: find the shortest path using BFS
-  // getShortestPath(mappedMaze);
+  // Step 2: find the shortest path using BFS
+  getShortestPath(mappedMaze); // only call this if memory is sufficient
   
-  // // check the resulting shortest path mapping
-  // Serial.println("Maze with Shortest Path:");
-  // printMaze(mappedMaze);
+  // check the resulting shortest path mapping
+  Serial.println("Maze with Shortest Path:");
+  printMaze(mappedMaze);
   
-  // // // Step 3: Store the maze in EEPROM
-  // memoryReset();
-  // storeMazeInEEPROM(mappedMaze);
+  // readMazeFromFile("maze.txt");
+  // Step 3: Store the maze in EEPROM
+  memoryReset();
+  storeMazeInEEPROM(mappedMaze);
 
-  // Uncomment this section after finish doing mapping, or u want to run all together also can
-  // Step 4: Read the maze from EEPROM into a local array
+  // // Uncomment this section after finish doing mapping, or u want to run all together also can
+  // // Step 4: Read the maze from EEPROM into a local array
   char retrievedMaze[ROWS][COLS];
   readMazeFromEEPROM(retrievedMaze); 
 
@@ -630,41 +637,6 @@ void setup() {
 
 }
 
-int ori = 180;
-
 void loop() {
-  // put your main code here, to run repeatedly:
-
-  // Jimm's Left Wall Following Code
-  // float fx = getDistanceFront();
-  // // float rx = getDistanceRight();
-  // float lx = getDistanceLeft();
-
-  // if (fx<5) {
-  //   turnRight(); ori-=90;
-  // } else if (lx>25) {
-  //   turnLeft(); ori+=90; 
-  // } else {
-  //   goForward(ori);
-  // }
-
-  // if (ori>360) {ori-=360;}
-  // if (ori<0) {ori +=360;}
-
-
-  // Testing Individual Functions
-  // goStraightGyro(400);
-
-  // restMotor();
-  // delay(1000);
-
-  // turnLeft();
-  // restMotor();
-  // delay(1000);
-
   
-  // turnRight();
-  // restMotor();
-  // delay(1000);
-
 }
